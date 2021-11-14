@@ -4,11 +4,10 @@ from AAD_KAGM_R_and_dR_dx_file import *
 
 import numpy
 #import datetime
-#import math
+import math
 import scipy
 import scipy.linalg
 import matplotlib.pyplot as pyplot
-
 
 def AAC_KAGM_SingleLoop(R_data, Tau_K, N, Parameters, Dt, dTau, KappaP_Constraint, ZLB_Imposed, IEKF_Count, FINAL):
     global Max_IEKF_Count
@@ -73,7 +72,7 @@ def AAC_KAGM_SingleLoop(R_data, Tau_K, N, Parameters, Dt, dTau, KappaP_Constrain
     F = numpy.matrix(scipy.linalg.expm(-KappaP*Dt))
     D, V = numpy.linalg.eig(F)
     if (numpy.any(numpy.abs(D)>1.0001)):
-        print 'SingleLoop:argChk   abs(eig(F))>1'
+        print('SingleLoop:argChk   abs(eig(F))>1')
         exit()
 
     Q = numpy.matrix([[G(2*d1,Dt), G(d1+d2,Dt)], [0, G(2*d2,Dt)]])
@@ -116,8 +115,8 @@ def AAC_KAGM_SingleLoop(R_data, Tau_K, N, Parameters, Dt, dTau, KappaP_Constrain
         # Observations for time t.
         y_Obs = numpy.matrix(0.01 * R_data[t,:]).getH()
         y_Missing = numpy.squeeze(numpy.array(numpy.isnan(y_Obs))) #numpy.array(numpy.isnan(y_Obs))#[:,0]
-        y_Obs = y_Obs[-y_Missing]
-        R = numpy.diag(numpy.power(Sigma_Nu[-y_Missing], 2))
+        y_Obs = y_Obs[~y_Missing]
+        R = numpy.diag(numpy.power(Sigma_Nu[~y_Missing], 2))
 
         x_Plus_i_Minus_1 = numpy.copy(x_Minus)
         x_Plus_i0 = numpy.copy(x_Minus)
@@ -131,8 +130,8 @@ def AAC_KAGM_SingleLoop(R_data, Tau_K, N, Parameters, Dt, dTau, KappaP_Constrain
 
             (y_Hat, H_i) = AAD_KAGM_R_and_dR_dx(x_Plus_i0, rL, KappaQ2, Sigma1, Sigma2, Rho12, Tau_K, dTau, ZLB_Imposed)
 
-            y_Hat = y_Hat[-y_Missing]
-            H_i = H_i[-y_Missing,:]
+            y_Hat = y_Hat[~y_Missing]
+            H_i = H_i[~y_Missing,:]
             HPHR_i = (H_i * P_Minus * H_i.getH() + R)
             K_i = numpy.linalg.solve(HPHR_i.getH(), (P_Minus*H_i.getH()).getH()).getH()
             w_i = y_Obs - y_Hat - H_i * (x_Minus - x_Plus_i0)
@@ -142,7 +141,7 @@ def AAC_KAGM_SingleLoop(R_data, Tau_K, N, Parameters, Dt, dTau, KappaP_Constrain
                 # Using tolerance, so check for convergence. 
                 if (i > 15):
                     # Large number of iterations, so print output to screen.
-                    print t, i-1, numpy.matrix(x_Plus_i1).getH(), numpy.matrix(x_Plus_i0).getH(), numpy.matrix(x_Plus_i1).getH() - numpy.matrix(x_Plus_i0).getH()
+                    print(t, i-1, numpy.matrix(x_Plus_i1).getH(), numpy.matrix(x_Plus_i0).getH(), numpy.matrix(x_Plus_i1).getH() - numpy.matrix(x_Plus_i0).getH())
                 if (numpy.all(numpy.abs(x_Plus_i1-x_Plus_i0)<x_Tolerance)):
                     # Difference from last update within tolerance, so exit.
                     break
@@ -163,10 +162,11 @@ def AAC_KAGM_SingleLoop(R_data, Tau_K, N, Parameters, Dt, dTau, KappaP_Constrain
         P_T[:,:,t] = numpy.copy(P_Plus)
         logL = logL + numpy.log(numpy.linalg.det(HPHR_i)) + numpy.linalg.solve(HPHR_i.getH(),w_i).getH() * w_i
 
-        # Hold IEKF count.
-        if (i-1 > Max_IEKF_Count):
-            Max_IEKF_Count = i - 1
-            Max_IEKF_Point = t
+        # Hold IEKF count.      
+        if Max_IEKF_Count is not None:
+            if (i-1 > Max_IEKF_Count):
+                Max_IEKF_Count = i - 1
+                Max_IEKF_Point = t
 
         # disp([num2str(t),' ',num2str(i-1),' ',num2str(x_Plus_i1'-x_Plus_i0')])
         # format long
@@ -182,7 +182,7 @@ def AAC_KAGM_SingleLoop(R_data, Tau_K, N, Parameters, Dt, dTau, KappaP_Constrain
     # Negate the log likelihood value because fminunc minimizes.
     EKF_logL = -EKF_logL
 
-    print EKF_logL*1e-3, Parameters[0:10], Rho12
+    print(EKF_logL*1e-3, Parameters[0:10], Rho12)
 
     tmp1 = numpy.sum(x_T, axis=0)
     figure = pyplot.figure(num=None, figsize=(8, 6), dpi=100, facecolor='w')

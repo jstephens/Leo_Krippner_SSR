@@ -1,5 +1,6 @@
 from globl import *
 from functions import *
+from functions1 import *
 from AAB_KAGM_Estimation_NelderMead_file import AAB_KAGM_Estimation_NelderMead
 from AAC_KAGM_SingleLoop_file import *
 from AAH_EMS_N23_function_file import *
@@ -24,7 +25,7 @@ FinalNaturalParametersGiven = 1 # OPTION: Full estimation if 0 (the Optimization
 HessianRequired = 0 # OPTION: Omits Hessian and standard errors if 0, calculates them if 1.
 
 # GSW US data file.
-Country = 'UK'
+Country = 'US'
 DataFrequency = 'Monthly'
 
 DataFileName=Country+'_GSW_Govt'
@@ -125,6 +126,8 @@ else:
 
     (StartT,) = numpy.where(MonthlyDateIndex==FirstMonth)
     (EndT,)   = numpy.where(MonthlyDateIndex==LastMonth1)
+    StartT = int(StartT)
+    EndT = int(EndT)
     if ((numpy.size(StartT) > 0) and (numpy.size(EndT) > 0)):
         YieldCurveDateIndex = MonthlyDateIndex[StartT:EndT+1]
         YieldCurveData = MonthlyYieldCurveData[StartT:EndT+1,IncludeMaturities]
@@ -138,7 +141,7 @@ Tau_K = numpy.copy(SampleMaturities)
 
 # Estimation.
 if (FinalNaturalParametersGiven == 1):
-    print 'Finalizing model K-AFNSM(2) for ' + Country + " using %i" % Maturities[0] + "-%i" % SampleMaturities[-1] + ' year data at ' + DataFrequency + ' frequency for period ' + matlab_datenum_to_datetime(YieldCurveDateIndex[0]).strftime('%d-%b-%Y') + ' to ' + matlab_datenum_to_datetime(YieldCurveDateIndex[-1]).strftime('%d-%b-%Y')
+    print('Finalizing model K-AFNSM(2) for ' + Country + " using %i" % Maturities[0] + "-%i" % SampleMaturities[-1] + ' year data at ' + DataFrequency + ' frequency for period ' + alternateconvertvalues(YieldCurveDateIndex[0]).strftime('%d-%b-%Y') + ' to ' + matlab_datenum_to_datetime(YieldCurveDateIndex[-1]).strftime('%d-%b-%Y'))
     FinalNaturalParameters = numpy.copy(InitialNaturalParameters)
     FINAL = 1
     Exitflag = -1
@@ -157,7 +160,7 @@ if (FinalNaturalParametersGiven == 1):
     Rho12 = FinalNaturalParameters[10]
 else:
     # Estimate final parameters.
-    print 'Estimating K-AFNSM(2) for ' + Country + " using %i" % SampleMaturities[0] + "-%i" % SampleMaturities[-1] + ' year data at ' + DataFrequency + ' frequency for period ' + matlab_datenum_to_datetime(YieldCurveDateIndex[0]).strftime('%d-%b-%Y') + ' to ' + matlab_datenum_to_datetime(YieldCurveDateIndex[-1]).strftime('%d-%b-%Y')
+    print('Estimating K-AFNSM(2) for ' + Country + " using %i" % SampleMaturities[0] + "-%i" % SampleMaturities[-1] + ' year data at ' + DataFrequency + ' frequency for period ' + alternateconvertvalues(YieldCurveDateIndex[0]).strftime('%d-%b-%Y') + ' to ' + matlab_datenum_to_datetime(YieldCurveDateIndex[-1]).strftime('%d-%b-%Y'))
     Exitflag = 0
     while (Exitflag == 0):
         if (KappaP_Constraint == 'Direct'):
@@ -165,7 +168,7 @@ else:
             tmp_func = lambda x: x/(1+numpy.abs(x))-InitialNaturalParameters[9]
             InitialParameters[9] = scipy.optimize.fsolve(tmp_func,1)
         elif (KappaP_Constraint == 'S/A'):
-            print 'Nothing here.'
+            print('Nothing here.')
 
         # Extended Kalman filter estimation.
         #Time0 = matlab_now(datetime.datetime.now())
@@ -207,7 +210,7 @@ else:
                 FinalNaturalParameters[5] = KappaP[1,1]
 
         elif (KappaP_Constraint == 'S/A'):
-            print 'Nothing here'
+            print('Nothing here')
 
     rL = FinalNaturalParameters[0]
     KappaQ2 = FinalNaturalParameters[1]
@@ -218,9 +221,9 @@ else:
     Rho12 = FinalNaturalParameters[10]
 
     # disp(Exitflag)
-    print [Max_IEKF_Point, Max_IEKF_Count]
-    print Fval
-    print FinalNaturalParameters[0:10]
+    print([Max_IEKF_Point, Max_IEKF_Count])
+    print(Fval)
+    print(FinalNaturalParameters[0:10])
 
     #plotyy(1:length(x_T),x_T',1:length(x_T),sum(x_T)')
     #pause 0.1
@@ -258,15 +261,15 @@ else:
 
 # Display output.
 dTime = Time1 - Time0
-print dTime*24, 'hours (=', dTime*24*60, 'minutes)'
-print Output
-print Exitflag
-print Fval
-print InitialNaturalParameters[0:10]
-print FinalNaturalParameters[0:10]
-print NaturalParameterStandardErrors[0:10]
+print(dTime*24, 'hours (=', dTime*24*60, 'minutes)')
+print(Output)
+print(Exitflag)
+print(Fval)
+print(InitialNaturalParameters[0:10])
+print(FinalNaturalParameters[0:10])
+print(NaturalParameterStandardErrors[0:10])
 KappaQ = numpy.matrix([[0,0], [0,KappaQ2]])
-print KappaP, numpy.linalg.eig(KappaP), KappaQ-KappaP
+print(KappaP, numpy.linalg.eig(KappaP), KappaQ-KappaP)
 
 (T,K) = numpy.shape(YieldCurveData)
 Residuals = numpy.ones((T,K)) * float('nan')
@@ -287,24 +290,24 @@ for t in range(0, T):
         #pause(0.3)
 
     Residual_t = 0.01 * YieldCurveData_t - Fitted_R_t
-    print numpy.shape(Residuals)
-    print numpy.shape(Residual_t)
+    #print(numpy.shape(Residuals))
+    #print(numpy.shape(Residual_t))
     Residuals[t,:] = Residual_t
 #
 
 RMSE_Residuals = numpy.sqrt(numpy.sum(numpy.multiply(Residuals,Residuals)) / T)
-print numpy.mean(Residuals)
-print RMSE_Residuals
+#print(numpy.mean(Residuals))
+#print(RMSE_Residuals)
 
 Phi = KappaQ2
 (SSR,EMS_Q,ETZ_Q) = AAH_EMS_N23_function(Phi, x_T, dTau)
 
 # Save final output in MatLab file.
 SaveName = AAL_CommonSaveName(DataFileName, ZLB_Imposed, IEKF_Count, SampleMaturities, N, DataFrequency, FINAL, -10);
-print SaveName
+print(SaveName)
 
 # Save final output in CSV file.
-#numpy.savetxt(SaveName+".csv", FinalNaturalParameters, fmt='%25.15e', delimiter=',', newline='\n')
+numpy.savetxt(SaveName+".csv", FinalNaturalParameters, fmt='%25.15e', delimiter=',', newline='\n')
 #save(SaveName)
 
 # Save final output in Excel spreadsheet.
@@ -319,22 +322,27 @@ SSR_neg = SSR.copy()
 SSR_neg[SSR_neg > 0] = numpy.nan
 pyplot.plot(SSR_neg*100,linewidth=2, marker='', markersize=3, zorder=1, label="slope", color='r')
 
-
-
 a=ax.get_xticks()
-y=[matlab_datenum_to_datetime(YieldCurveDateIndex[int(x)]).date().year for x in a[:-1]] 
-pyplot.xticks(a,y, rotation=90)
+# removing the last value because ???????
+# creating a plot where values -5000 to 25000 are the x-axis and y is dates
+
+y=[matlab_datenum_to_datetime(YieldCurveDateIndex[int(x)]).date().year for x in a[:-1]]
+
+print("y is ",y)
+print("type of y is ",type(y))
+print("y length is ",len(y))
+
+pyplot.xticks(a[:-1],y, rotation=90)
 pyplot.ylabel('Percentage')
 fig.suptitle('SSR', fontsize=20)
 fig.savefig('SSR_'+DataFrequency+'.jpg')
-
 
 fig,ax=pyplot.subplots()
 pyplot.plot(EMS_Q*100,linewidth=2, marker='', markersize=3, zorder=1, label="slope")
 
 a=ax.get_xticks()
 y=[matlab_datenum_to_datetime(YieldCurveDateIndex[int(x)]).date().year for x in a[:-1]] 
-pyplot.xticks(a,y, rotation=90)
+pyplot.xticks(a[:-1],y, rotation=90)
 pyplot.ylabel('Percentage')
 fig.suptitle('EMS', fontsize=20)
 fig.savefig('EMS_'+DataFrequency+'.jpg')
@@ -344,7 +352,7 @@ pyplot.plot(ETZ_Q,linewidth=2, marker='', markersize=3, zorder=1, label="slope")
 
 a=ax.get_xticks()
 y=[matlab_datenum_to_datetime(YieldCurveDateIndex[int(x)]).date().year for x in a[:-1]] 
-pyplot.xticks(a,y, rotation=90)
+pyplot.xticks(a[:-1],y, rotation=90)
 pyplot.ylabel('Years')
 fig.suptitle('ETZ', fontsize=20)
 fig.savefig('ETZ_'+DataFrequency+'.jpg')
@@ -359,7 +367,7 @@ output=numpy.concatenate((output,  100*ETZ_Q.reshape((SSR.shape[0],1))), axis=1)
 date_str = [matlab_datenum_to_datetime(x).date().__str__() for x in YieldCurveDateIndex]
 k=numpy.array(date_str)
 k=k.reshape((len(k), 1))
-with open(SaveName+'_final.csv', 'wb') as csvfile:
+with open(SaveName+'_final.csv', 'w') as csvfile:
     spamwriter = csv.writer(csvfile, delimiter=',')
     header =['Date']+[str(x) for x in SampleMaturities]+['Level','Slope','SSR','EMS-Q','ETZ-Q']
     spamwriter.writerow(header)
@@ -367,4 +375,4 @@ with open(SaveName+'_final.csv', 'wb') as csvfile:
         data_to_write = list(k[i]) + list(output[i])
         spamwriter.writerow(data_to_write)
     
-print 'Finished'
+print('Finished')
