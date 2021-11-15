@@ -183,7 +183,7 @@ def AAC_KAGM_SingleLoop(R_data, Tau_K, N, Parameters, Dt, dTau, KappaP_Constrain
     # Negate the log likelihood value because fminunc minimizes.
     EKF_logL = -EKF_logL
 
-    print(EKF_logL*1e-3, Parameters[0:10], Rho12)
+   # print(EKF_logL*1e-3, Parameters[0:10], Rho12)
 
     tmp1 = numpy.sum(x_T, axis=0)
     figure = pyplot.figure(num=None, figsize=(8, 6), dpi=100, facecolor='w')

@@ -5,9 +5,7 @@ import numpy
 
 
 def AAE_KAGM_f_and_df_dx(x_t, rL, KappaQ2, Sigma1, Sigma2, Rho12, TauGrid, ZLB_Imposed):
-    #UNTITLED Summary of this function goes here
-    #   Detailed explanation goes here
-
+    
     x_t = numpy.array(x_t)
     TauGrid = numpy.array(TauGrid)[:,0]
 
@@ -33,8 +31,11 @@ def AAE_KAGM_f_and_df_dx(x_t, rL, KappaQ2, Sigma1, Sigma2, Rho12, TauGrid, ZLB_I
         Omega = numpy.sqrt(Sigma1**2 * G_11 + Sigma2**2 * G_22 + 2 * Rho12 * Sigma1 * Sigma2 * G_12)
 
         # Calculate cumulative normal probabilities for N(0,1) distribution.
-        d = numpy.divide(GATSM_f-rL, Omega)
-        normsdist_erf_d = normsdist_erf(d)
+        with numpy.errstate(divide='ignore'):
+            d = numpy.divide(GATSM_f-rL, Omega)
+        
+        with numpy.errstate(divide='ignore'):
+            normsdist_erf_d = normsdist_erf(d)
 
         # Calculate gradiant and CAB_GATSM_f
         CAB_GATSM_df_dx = numpy.transpose(numpy.vstack((numpy.multiply(g1,normsdist_erf_d), numpy.multiply(g2,normsdist_erf_d))))

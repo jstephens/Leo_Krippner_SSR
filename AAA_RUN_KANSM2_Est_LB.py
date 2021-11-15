@@ -250,7 +250,7 @@ else:
 
 # Display output.
 dTime = Time1 - Time0
-print(dTime*24, 'hours (=', dTime*24*60, 'minutes)')
+#print(dTime*24, 'hours (=', dTime*24*60, 'minutes)')
 # print(Output)
 # print(Exitflag)
 # print(Fval)
@@ -293,7 +293,7 @@ Phi = KappaQ2
 
 # Save final output in MatLab file.
 SaveName = AAL_CommonSaveName(DataFileName, ZLB_Imposed, IEKF_Count, SampleMaturities, N, DataFrequency, FINAL, -10);
-print(SaveName)
+print("File name: \n",SaveName)
 
 # Save final output in CSV file.
 #numpy.savetxt(SaveName+".csv", FinalNaturalParameters, fmt='%25.15e', delimiter=',', newline='\n')
@@ -311,36 +311,36 @@ SSR_neg = SSR.copy()
 SSR_neg[SSR_neg > 0] = numpy.nan
 pyplot.plot(SSR_neg*100,linewidth=2, marker='', markersize=3, zorder=1, label="slope", color='r')
 
-
-
 a=ax.get_xticks()
 
-# y=[matlab_datenum_to_datetime(YieldCurveDateIndex[int(x)]).date().year for x in a[:-1]] 
-# pyplot.xticks(ticks=a,labels=y, rotation=90)
-# pyplot.ylabel('Percentage')
-# fig.suptitle('SSR', fontsize=20)
-# fig.savefig('SSR_'+DataFrequency+'.jpg')
+y=[matlab_datenum_to_datetime(YieldCurveDateIndex[int(x)]).date().year for x in a[:-1]] 
 
+a = a[:-1]
+pyplot.xticks(ticks=a,labels=y, rotation=90)
+pyplot.ylabel('Percentage')
+fig.suptitle('SSR', fontsize=20)
+fig.savefig('SSR_'+DataFrequency+'.jpg')
 
-# fig,ax=pyplot.subplots()
-# pyplot.plot(EMS_Q*100,linewidth=2, marker='', markersize=3, zorder=1, label="slope")
+fig,ax=pyplot.subplots()
+pyplot.plot(EMS_Q*100,linewidth=2, marker='', markersize=3, zorder=1, label="slope")
+a=ax.get_xticks()
+y=[matlab_datenum_to_datetime(YieldCurveDateIndex[int(x)]).date().year for x in a[:-1]] 
+a = a[:-1]
+pyplot.xticks(a,y, rotation=90)
+pyplot.ylabel('Percentage')
+fig.suptitle('EMS', fontsize=20)
+fig.savefig('EMS_'+DataFrequency+'.jpg')
 
-# a=ax.get_xticks()
-# y=[matlab_datenum_to_datetime(YieldCurveDateIndex[int(x)]).date().year for x in a] 
-# pyplot.xticks(a,y, rotation=90)
-# pyplot.ylabel('Percentage')
-# fig.suptitle('EMS', fontsize=20)
-# fig.savefig('EMS_'+DataFrequency+'.jpg')
+fig,ax=pyplot.subplots()
+pyplot.plot(ETZ_Q,linewidth=2, marker='', markersize=3, zorder=1, label="slope")
 
-# fig,ax=pyplot.subplots()
-# pyplot.plot(ETZ_Q,linewidth=2, marker='', markersize=3, zorder=1, label="slope")
-
-# a=ax.get_xticks()
-# y=[matlab_datenum_to_datetime(YieldCurveDateIndex[int(x)]).date().year for x in a[:-1]] 
-# pyplot.xticks(a,y, rotation=90)
-# pyplot.ylabel('Years')
-# fig.suptitle('ETZ', fontsize=20)
-# fig.savefig('ETZ_'+DataFrequency+'.jpg')
+a=ax.get_xticks()
+y=[matlab_datenum_to_datetime(YieldCurveDateIndex[int(x)]).date().year for x in a[:-1]] 
+a = a[:-1]
+pyplot.xticks(a,y, rotation=90)
+pyplot.ylabel('Years')
+fig.suptitle('ETZ', fontsize=20)
+fig.savefig('ETZ_'+DataFrequency+'.jpg')
 
 # pyplot.show()
 
