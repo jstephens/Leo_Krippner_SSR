@@ -75,6 +75,8 @@ IncludeMaturities = numpy.array([x in SampleMaturities for x in Maturities])
 if (DataFrequency == 'Daily'):
     (StartT,) = numpy.where(DailyDateIndex==FirstDay)
     (EndT,)   = numpy.where(DailyDateIndex==LastDay)
+    StartT = int(StartT)
+    EndT = int(EndT)
     YieldCurveDateIndex = DailyDateIndex[StartT:EndT+1]
     YieldCurveData = DailyYieldCurveData[StartT:EndT+1,IncludeMaturities]
     Dt = (YieldCurveDateIndex[-1] - YieldCurveDateIndex[0] + 1) / (len(YieldCurveDateIndex) * 365.25)
@@ -87,8 +89,10 @@ elif (DataFrequency == 'Weekly'):
     # Find latest Friday consistent with LastDay.
     WeeksToStepBackForEnd = 1 + numpy.floor((ReferenceFriday - LastDay) / 7)
     LastWeek = ReferenceFriday - 7 * WeeksToStepBackForEnd
+
     (StartT,) = numpy.where(WeeklyDateIndex==FirstWeek)
     (EndT,)   = numpy.where(WeeklyDateIndex==LastWeek)
+
     YieldCurveDateIndex = WeeklyDateIndex[StartT:EndT+1]
     YieldCurveData = WeeklyYieldCurveData[StartT:EndT+1,IncludeMaturities]
     Dt = 7 / 365.25
@@ -100,7 +104,7 @@ else:
         FirstYear = FirstYear+1
         FirstMonth =  0
     FirstMonth = numpy.int(datetime_to_matlab_datenum(datetime.datetime(FirstYear, FirstMonth+1, 1)) - 1)
-
+    
     # Find latest end-month consistent with LastDay.
     [LastYear, LastMonth] = [datetime.datetime.fromordinal(numpy.int(LastDay-366)).year, datetime.datetime.fromordinal(numpy.int(LastDay-366)).month]
     if LastMonth == 12:
@@ -112,7 +116,7 @@ else:
             LastYear = LastYear-1
             LastMonth =  12    
         LastMonth1 = datetime_to_matlab_datenum(datetime.datetime(LastYear, LastMonth, 1)) - 1
-
+    
     (StartT,) = numpy.where(MonthlyDateIndex==FirstMonth)
     (EndT,)   = numpy.where(MonthlyDateIndex==LastMonth1)
     StartT = int(StartT)

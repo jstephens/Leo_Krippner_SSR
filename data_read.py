@@ -147,7 +147,7 @@ BusinessDayTimestamp = float(common_datenum[-1]-common_datenum[0]+1)/(len(common
 
 #GOVT
 if Country == 'EA':
-    wbG=openpyxl.load_workbook(os.path.join(PathName, 'A_GE_All_Data_Bloomberg.xlsx'))
+    wbG=openpyxl.load_workbook(os.path.join(PathName, './Data_Files/A_GE_All_Data_Bloomberg.xlsx'))
     sheet=wbG['D. Live Govt data']
     datenumG = [[] for i in range(len(datelist))]
     values_dataG=[[] for i in range(len(datelist))]
@@ -189,8 +189,8 @@ if Country == 'EA':
     post_euro_ge_index=filter_data(common_datenumG,index_to_del,1)
     post_euro_ge_vlues=filter_data(values_dataG,index_to_del,len(values_dataG))
 
-    wbF=openpyxl.load_workbook(os.path.join(PathName, 'A_FR_All_Data_Bloomberg.xlsx'))
-    sheet=wbG.get_sheet_by_name('D. Live Govt data')
+    wbF=openpyxl.load_workbook(os.path.join(PathName, './Data_Files/A_FR_All_Data_Bloomberg.xlsx'))
+    sheet=wbG['D. Live Govt data']
     datenumF = [[] for i in range(len(datelist))]
     values_dataF=[[] for i in range(len(datelist))]
     for col_num in range(len(datelist)):
