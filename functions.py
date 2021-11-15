@@ -8,6 +8,7 @@ def datetime_to_matlab_datenum(dt):
 #######################################################################################################################
 def matlab_datenum_to_datetime(dn):
     # Convert a datetime object to its MATLAB datenum() equivalent
+    dn = dn.item()
     return datetime.datetime(1,1,1,0,0) + datetime.timedelta(dn-366-1)
 
 #######################################################################################################################

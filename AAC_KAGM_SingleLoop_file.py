@@ -4,10 +4,11 @@ from AAD_KAGM_R_and_dR_dx_file import *
 
 import numpy
 #import datetime
-import math
+#import math
 import scipy
 import scipy.linalg
 import matplotlib.pyplot as pyplot
+
 
 def AAC_KAGM_SingleLoop(R_data, Tau_K, N, Parameters, Dt, dTau, KappaP_Constraint, ZLB_Imposed, IEKF_Count, FINAL):
     global Max_IEKF_Count
@@ -162,7 +163,7 @@ def AAC_KAGM_SingleLoop(R_data, Tau_K, N, Parameters, Dt, dTau, KappaP_Constrain
         P_T[:,:,t] = numpy.copy(P_Plus)
         logL = logL + numpy.log(numpy.linalg.det(HPHR_i)) + numpy.linalg.solve(HPHR_i.getH(),w_i).getH() * w_i
 
-        # Hold IEKF count.      
+        # Hold IEKF count.
         if Max_IEKF_Count is not None:
             if (i-1 > Max_IEKF_Count):
                 Max_IEKF_Count = i - 1

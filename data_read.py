@@ -1,3 +1,4 @@
+import numpy as np
 import openpyxl
 import string
 import datetime
@@ -10,15 +11,18 @@ def write_to_csv(idx,idx1,val,val1,sub_datenum,name):
     daily_values_data=map(list,zip(*val))
     daily_values_data1=map(list,zip(*val1))
 
+    daily_values_data = list(daily_values_data)
+    daily_values_data1 = list(daily_values_data1)
+
     daily_date_index=list(idx)
     daily_date_index[:] = [x - sub_datenum for x in idx]
+    
+    daily_date_index = list(daily_date_index)
 
     daily_date_index1=list(idx1)
     daily_date_index1[:] = [x - sub_datenum for x in idx1]
     
-    daily_values_data = list(daily_values_data)
-    daily_values_data1 = list(daily_values_data1)
-    print(daily_values_data)
+    daily_date_index1 = list(daily_date_index1)
     
     for i in range(len(daily_values_data)):
         daily_values_data[i].insert(0,daily_date_index[i])
@@ -29,7 +33,6 @@ def write_to_csv(idx,idx1,val,val1,sub_datenum,name):
         spamwriter = csv.writer(csvfile, delimiter=',',quotechar='|', quoting=csv.QUOTE_NONNUMERIC)
         spamwriter.writerows(daily_values_data1)
         spamwriter.writerows(daily_values_data)
-    print(name+'.csv')
         
 def filter_data_index(a,thr,method):
     if method == 'ge':
@@ -65,7 +68,7 @@ valuelist = list1[1:36:3]
 Country='US'# US, EA, JP, UK. 
 CurveType='OIS'
 PathName=os.getcwd()
-ExcelName=os.path.join(PathName, 'A_'+Country+'_All_Data_Bloomberg - Hard.xlsx')
+ExcelName=os.path.join(PathName, './Data_Files/A_'+Country+'_All_Data_Bloomberg.xlsx')
 if CurveType == 'OIS':
     ExcelSheetName='D. Live OIS data'
 if CurveType == 'Govt':
@@ -187,7 +190,7 @@ if Country == 'EA':
     post_euro_ge_vlues=filter_data(values_dataG,index_to_del,len(values_dataG))
 
     wbF=openpyxl.load_workbook(os.path.join(PathName, 'A_FR_All_Data_Bloomberg.xlsx'))
-    sheet=wbG['D. Live Govt data']
+    sheet=wbG.get_sheet_by_name('D. Live Govt data')
     datenumF = [[] for i in range(len(datelist))]
     values_dataF=[[] for i in range(len(datelist))]
     for col_num in range(len(datelist)):
@@ -257,10 +260,7 @@ else:
         DateGen=sheet[datelist[col_num]+'8':datelist[col_num]+'8000']
         for i in DateGen:
             if i[0].value is not None:
-                if type(i[0].value) is not int:
-                    a=i[0].value.date().toordinal()
-                else:
-                    a=i[0].value
+                a=i[0].value.date().toordinal()
                 datenum1[col_num].append(a)
 
         ValueGen=sheet[valuelist[col_num]+'8':valuelist[col_num]+'8000']
@@ -278,8 +278,6 @@ else:
 
     for i in range(len(datenum1)):
         diff_dates=list(set(common_datenum1) ^ set(datenum1[i]))
-        print(diff_dates)
-        print(len(diff_dates))
         for j in diff_dates:
             index=datenum1[i].index(j)
             print(str(j)+' date num at '+str(index)+'removed') 
@@ -287,10 +285,6 @@ else:
             values_data1[i].remove(value_to_remove)
 
 ref_friday=datetime.date(2013,5,24).toordinal()
-print(type(common_datenum1))
-print(len(common_datenum1))
-print(ref_friday)
-print(common_datenum1[0])
 weeks_to_step_back = (ref_friday - common_datenum1[0])/7
 first_friday = ref_friday - (weeks_to_step_back*7)
 
