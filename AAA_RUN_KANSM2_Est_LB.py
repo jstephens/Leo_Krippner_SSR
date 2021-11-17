@@ -25,7 +25,7 @@ HessianRequired = 0 # OPTION: Omits Hessian and standard errors if 0, calculates
 
 # GSW US data file.
 Country = 'US'
-DataFrequency = 'Monthly'
+DataFrequency = 'Daily'
 
 DataFileName=Country+'_GSW_Govt'
 
@@ -92,7 +92,8 @@ elif (DataFrequency == 'Weekly'):
 
     (StartT,) = numpy.where(WeeklyDateIndex==FirstWeek)
     (EndT,)   = numpy.where(WeeklyDateIndex==LastWeek)
-
+    StartT = int(StartT)
+    EndT = int(EndT)    
     YieldCurveDateIndex = WeeklyDateIndex[StartT:EndT+1]
     YieldCurveData = WeeklyYieldCurveData[StartT:EndT+1,IncludeMaturities]
     Dt = 7 / 365.25
@@ -315,38 +316,44 @@ SSR_neg = SSR.copy()
 SSR_neg[SSR_neg > 0] = numpy.nan
 pyplot.plot(SSR_neg*100,linewidth=2, marker='', markersize=3, zorder=1, label="slope", color='r')
 
-a=ax.get_xticks()
 
-y=[matlab_datenum_to_datetime(YieldCurveDateIndex[int(x)]).date().year for x in a[:-1]] 
+try:
+    a=ax.get_xticks()
+    y=[matlab_datenum_to_datetime(YieldCurveDateIndex[int(x)]).date().year for x in a[:-1]] 
+    a = a[:-1]
+    pyplot.xticks(ticks=a,labels=y, rotation=90)
+    pyplot.ylabel('Percentage')
+    fig.suptitle('SSR', fontsize=20)
+    fig.savefig('SSR_'+DataFrequency+'.jpg')
+except:
+    print("Unable to show SSR graph")
 
-a = a[:-1]
-pyplot.xticks(ticks=a,labels=y, rotation=90)
-pyplot.ylabel('Percentage')
-fig.suptitle('SSR', fontsize=20)
-fig.savefig('SSR_'+DataFrequency+'.jpg')
 
-fig,ax=pyplot.subplots()
-pyplot.plot(EMS_Q*100,linewidth=2, marker='', markersize=3, zorder=1, label="slope")
-a=ax.get_xticks()
-y=[matlab_datenum_to_datetime(YieldCurveDateIndex[int(x)]).date().year for x in a[:-1]] 
-a = a[:-1]
-pyplot.xticks(a,y, rotation=90)
-pyplot.ylabel('Percentage')
-fig.suptitle('EMS', fontsize=20)
-fig.savefig('EMS_'+DataFrequency+'.jpg')
+try:
+    fig,ax=pyplot.subplots()
+    pyplot.plot(EMS_Q*100,linewidth=2, marker='', markersize=3, zorder=1, label="slope")
+    a=ax.get_xticks()
+    a = a[:-1]
+    pyplot.xticks(a,y, rotation=90)
+    pyplot.ylabel('Percentage')
+    fig.suptitle('EMS', fontsize=20)
+    fig.savefig('EMS_'+DataFrequency+'.jpg')
+except:
+    print("Unable to show EMS graph")
+    
 
-fig,ax=pyplot.subplots()
-pyplot.plot(ETZ_Q,linewidth=2, marker='', markersize=3, zorder=1, label="slope")
-
-a=ax.get_xticks()
-y=[matlab_datenum_to_datetime(YieldCurveDateIndex[int(x)]).date().year for x in a[:-1]] 
-a = a[:-1]
-pyplot.xticks(a,y, rotation=90)
-pyplot.ylabel('Years')
-fig.suptitle('ETZ', fontsize=20)
-fig.savefig('ETZ_'+DataFrequency+'.jpg')
-
-# pyplot.show()
+try:
+    fig,ax=pyplot.subplots()
+    pyplot.plot(ETZ_Q,linewidth=2, marker='', markersize=3, zorder=1, label="slope")
+    a=ax.get_xticks()
+    y=[matlab_datenum_to_datetime(YieldCurveDateIndex[int(x)]).date().year for x in a[:-1]]
+    a = a[:-1]
+    pyplot.xticks(a,y, rotation=90)
+    pyplot.ylabel('Years')
+    fig.suptitle('ETZ', fontsize=20)
+    fig.savefig('ETZ_'+DataFrequency+'.jpg') 
+except:
+    print("Unable to show ETZ graph")
 
 output=numpy.concatenate((YieldCurveData, 100*x_T.T), axis=1)
 output=numpy.concatenate((output,  100*SSR.reshape((SSR.shape[0],1))), axis=1)

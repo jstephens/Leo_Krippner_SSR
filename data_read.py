@@ -1,4 +1,3 @@
-import numpy as np
 import openpyxl
 import string
 import datetime
@@ -6,8 +5,11 @@ from scipy import interpolate
 import calendar
 import csv
 import os
+import pandas as pd
+import numpy as np
 
 def write_to_csv(idx,idx1,val,val1,sub_datenum,name):
+    
     daily_values_data=map(list,zip(*val))
     daily_values_data1=map(list,zip(*val1))
 
@@ -16,13 +18,15 @@ def write_to_csv(idx,idx1,val,val1,sub_datenum,name):
 
     daily_date_index=list(idx)
     daily_date_index[:] = [x - sub_datenum for x in idx]
-    
     daily_date_index = list(daily_date_index)
 
     daily_date_index1=list(idx1)
     daily_date_index1[:] = [x - sub_datenum for x in idx1]
     
     daily_date_index1 = list(daily_date_index1)
+    
+    # daily_date_index1 is from fri 12/30/1994 to fri 12/30/2005
+    # daily_date_index is from tues 1/31/2006 to tues 11/30/2021
     
     for i in range(len(daily_values_data)):
         daily_values_data[i].insert(0,daily_date_index[i])
@@ -33,6 +37,8 @@ def write_to_csv(idx,idx1,val,val1,sub_datenum,name):
         spamwriter = csv.writer(csvfile, delimiter=',',quotechar='|', quoting=csv.QUOTE_NONNUMERIC)
         spamwriter.writerows(daily_values_data1)
         spamwriter.writerows(daily_values_data)
+    
+    print(f"Export for {name}.csv finished. ")
         
 def filter_data_index(a,thr,method):
     if method == 'ge':
@@ -78,8 +84,27 @@ Maturities=[0.25,0.5,1,2,3,4,5,7,10,15,20,30]
 
 wb=openpyxl.load_workbook(ExcelName)
 sheet_names=wb.sheetnames
+
 sheet=wb['D. Live OIS data']
 datenum = [[] for i in range(len(datelist))]
+
+
+# ========== remove rows from start of OIS data =============
+for z in range(1, 10):
+    zb = sheet.cell(row=z, column=2).value
+    if zb == 'PX_MID':
+        headerindex = z
+
+sheet.delete_rows(headerindex+1)
+kb = sheet.cell(row=headerindex+1,column=1).value
+kbdayofw = kb.weekday()
+
+while kbdayofw != 3: # change this to alter day of data reporting. week starts on monday at 0
+    sheet.delete_rows(headerindex)
+    kb = sheet.cell(row=headerindex+1,column=1).value
+    kbdayofw = kb.weekday()
+# =========== end of data splicing correction ===============
+    
 values_data=[[] for i in range(len(datelist))]
 for col_num in range(len(datelist)):
     DateGen=sheet[datelist[col_num]+'8':datelist[col_num]+'8000']
@@ -113,6 +138,7 @@ weeks_to_step_back = (ref_friday - common_datenum[0])/7
 first_friday = ref_friday - (weeks_to_step_back*7)
 
 week_date_index = range(int(first_friday),common_datenum[-1],7)
+# week_date_index shows 01-03-2005 to 11-16-2020
 
 week_values_data=[[] for i in range(len(datelist))]
 for i in range(len(datelist)):
@@ -125,6 +151,7 @@ last_date=datetime.date.fromordinal(common_datenum[-1])
 
 first_year = first_date.year
 last_year = last_date.year
+
 
 for i in range(first_date.month,13,1):
     (first_week_day,last_day_of_month)=calendar.monthrange(first_year,i)
@@ -295,10 +322,10 @@ for i in range(len(datelist)):
     week_values_data1[i] = list(f(week_date_index1))
 
 month_date_index1=[]
-first_date=datetime.date.fromordinal(common_datenum1[0])
-last_date=datetime.date.fromordinal(common_datenum1[-1])
-first_year = first_date.year
-last_year = last_date.year
+first_date=datetime.date.fromordinal(common_datenum1[0]) # 1994-12-30
+last_date=datetime.date.fromordinal(common_datenum1[-1]) # 2016-11-16
+first_year = first_date.year # 1994
+last_year = last_date.year # 2016
 
 for i in range(first_date.month,13,1):
     (first_week_day,last_day_of_month)=calendar.monthrange(first_year,i)
@@ -319,6 +346,7 @@ for i in range(len(datelist)):
 BusinessDayTimestamp1 = float(common_datenum1[-1]-common_datenum1[0]+1)/(len(common_datenum1)*365.25)
 
 sub_datenum = datetime.date(1899,12,30).toordinal()
+# sub_datenum is 693594
 
 if Country == 'JP':
     firstday=datetime.date(2009,8,6).toordinal()
@@ -326,7 +354,6 @@ else:
     firstday=common_datenum[0]
 
 lastday=firstday-1
-
 
 index_to_del=filter_data_index(common_datenum,firstday,'ge')
 new_daily_index=filter_data(common_datenum,index_to_del,1)
@@ -338,6 +365,8 @@ new_daily_values1=filter_data(values_data1,index_to_del,len(values_data1))
 
 write_to_csv(new_daily_index,new_daily_index1,new_daily_values,new_daily_values1,sub_datenum,Country+'_Daily')
 
+
+
 index_to_del=filter_data_index(week_date_index,firstday,'ge')
 new_daily_index=filter_data(week_date_index,index_to_del,1)
 new_daily_values=filter_data(week_values_data,index_to_del,len(week_values_data))
@@ -346,6 +375,8 @@ index_to_del=filter_data_index(week_date_index1,lastday,'le')
 new_daily_index1=filter_data(week_date_index1,index_to_del,1)
 new_daily_values1=filter_data(week_values_data1,index_to_del,len(week_values_data1))
 write_to_csv(new_daily_index,new_daily_index1,new_daily_values,new_daily_values1,sub_datenum,Country+'_Weekly')
+# new_daily_index is 2005-01-03 to 2020-11-09 
+# new_daily_index1 is 1993-12-29 to 2004-12-29
 
 index_to_del=filter_data_index(month_date_index,firstday,'ge')
 new_daily_index=filter_data(month_date_index,index_to_del,1)
@@ -356,5 +387,3 @@ new_daily_index1=filter_data(month_date_index1,index_to_del,1)
 new_daily_values1=filter_data(month_values_data1,index_to_del,len(month_values_data1))
 
 write_to_csv(new_daily_index,new_daily_index1,new_daily_values,new_daily_values1,sub_datenum,Country+'_Monthly')
-
-

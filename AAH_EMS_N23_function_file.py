@@ -12,7 +12,8 @@ def AAH_EMS_N2_function(Phi, x_T):
         if (SSR[t] >= 0):
             EMS_t = -x_t[1] / Phi
         else:
-            Tau0 = -numpy.log(-x_t[0] / x_t[1]) / Phi
+            with numpy.errstate(invalid='ignore'):
+                Tau0 = -numpy.log(-x_t[0] / x_t[1]) / Phi
             ETZ[t] = Tau0
             EMS_t = x_t[0] * Tau0 - x_t[1] * numpy.exp(-Phi*Tau0) / Phi
         EMS[t] = EMS_t
